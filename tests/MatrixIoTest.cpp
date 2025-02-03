@@ -14,7 +14,7 @@ struct MatrixIOFixture {
     expectedMatrix << 0.680375, 0.59688, -0.329554,
         -0.211234, 0.823295, 0.536459,
         0.566198, -0.604897, -0.444451;
-    fileName = "m3_test.csv";
+    fileName = "test.csv";
     size     = 3;
   }
 
