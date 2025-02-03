@@ -1,0 +1,52 @@
+name: Boost Exercise workflow
+on: [push]
+jobs:
+  style_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jidicula/clang-format-action@v4.14.0
+        with:
+          check-path: ./src
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Installing packages"
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libboost-all-dev cmake libeigen3-dev libyaml-cpp-dev
+      - name: "building source"
+        run: |
+          mkdir github-build 
+          cd github-build
+          cmake .. 
+          make
+      - name: "Archiving the build folder"
+        run : tar -cvf github-build.tar ./github-build
+      - name: "Uploading artifact(24 hours retention)"
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-zip
+          path: github-build.tar
+          retention-days: 1
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Installing packages"
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libboost-all-dev cmake libeigen3-dev libyaml-cpp-dev
+      - name: "Download build-zip folder"
+        uses: actions/download-artifact@v4
+        with:
+          name: build-zip
+      - name: "Unziping build folder"
+        run: |
+          tar -xvf github-build.tar
+      - name: "Running the tests"
+        run: |
+          cd github-build
+          ctest --output-on-failure
